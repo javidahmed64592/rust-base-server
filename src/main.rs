@@ -1,17 +1,12 @@
-fn get_greeting() -> &'static str {
-    "Hello, world!"
+#[macro_use]
+extern crate rocket;
+
+#[get("/hello/<name>")]
+fn hello(name: &str) -> String {
+    format!("Hello, {}!", name)
 }
 
-fn main() {
-    println!("{}", get_greeting());
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn greeting_is_hello_world() {
-        assert_eq!(get_greeting(), "Hello, world!");
-    }
+#[launch]
+fn rocket() -> _ {
+    rocket::build().mount("/", routes![hello])
 }
