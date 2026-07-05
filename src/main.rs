@@ -2,9 +2,9 @@
 extern crate rocket;
 use rocket::tokio::time::{Duration, sleep};
 
-#[get("/hello/<name>")]
-fn hello(name: &str) -> String {
-    format!("Hello, {}!", name)
+#[get("/health")]
+fn health() -> &'static str {
+    "OK"
 }
 
 #[get("/delay/<seconds>")]
@@ -15,5 +15,5 @@ async fn delay(seconds: u64) -> String {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![hello, delay])
+    rocket::build().mount("/", routes![health, delay])
 }
