@@ -1,19 +1,20 @@
 [package]
-name = "template_rust"
+name = "rust_base_server"
 version = "0.1.0"
 description = "A template for creating Rust applications."
 edition = "2024"
-repository = "https://github.com/javidahmed64592/template-rust"
+repository = "https://github.com/javidahmed64592/rust-base-server"
 license = "MIT"
 authors = ["Javid Ahmed <javidahmed@icloud.com>"]
 
 [package.metadata.wix]
-upgrade-guid = "F907DF88-7AA9-4257-AD19-515DF69BAAC3"
-path-guid = "EF829ECD-A13B-4D95-8332-5847850B2EC3"
+upgrade-guid = "5C25D2FE-94E1-4BD1-9DD5-4BA37A737700"
+path-guid = "330E736F-2F5D-402C-9731-C6147B1CAE0A"
 license = false
 eula = false
 
 [dependencies]
+rocket = "0.5.1"
 
 [profile.dist]
 inherits = "release"

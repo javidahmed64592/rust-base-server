@@ -60,8 +60,8 @@
 
     <Product
         Id='*'
-        Name='template_rust'
-        UpgradeCode='F907DF88-7AA9-4257-AD19-515DF69BAAC3'
+        Name='rust_base_server'
+        UpgradeCode='5C25D2FE-94E1-4BD1-9DD5-4BA37A737700'
         Manufacturer='Javid Ahmed'
         Language='1033'
         Codepage='1252'
@@ -83,11 +83,11 @@
             DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
 
         <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
-        <Property Id='DiskPrompt' Value='template_rust Installation'/>
+        <Property Id='DiskPrompt' Value='rust_base_server Installation'/>
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-                <Directory Id='APPLICATIONFOLDER' Name='template_rust'>
+                <Directory Id='APPLICATIONFOLDER' Name='rust_base_server'>
                     
                     <!--
                       Enabling the license sidecar file in the installer is a four step process:
@@ -110,7 +110,7 @@
                     -->
 
                     <Directory Id='Bin' Name='bin'>
-                        <Component Id='Path' Guid='EF829ECD-A13B-4D95-8332-5847850B2EC3' KeyPath='yes'>
+                        <Component Id='Path' Guid='330E736F-2F5D-402C-9731-C6147B1CAE0A' KeyPath='yes'>
                             <Environment
                                 Id='PATH'
                                 Name='PATH'
@@ -123,9 +123,9 @@
                         <Component Id='binary0' Guid='*'>
                             <File
                                 Id='exe0'
-                                Name='template_rust.exe'
+                                Name='rust_base_server.exe'
                                 DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\template_rust.exe'
+                                Source='$(var.CargoTargetBinDir)\rust_base_server.exe'
                                 KeyPath='yes'/>
                         </Component>
                     </Directory>
@@ -173,7 +173,7 @@
         <!--<Icon Id='ProductICO' SourceFile='wix\Product.ico'/>-->
         <!--<Property Id='ARPPRODUCTICON' Value='ProductICO' />-->
 
-        <Property Id='ARPHELPLINK' Value='https://github.com/javidahmed64592/template-rust'/>
+        <Property Id='ARPHELPLINK' Value='https://github.com/javidahmed64592/rust-base-server'/>
         
         <UI>
             <UIRef Id='WixUI_FeatureTree'/>
