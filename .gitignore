@@ -23,3 +23,6 @@ target
 # Environment variable files
 .env*
 !.env.example
+
+# SQLite database files
+*.sqlite
