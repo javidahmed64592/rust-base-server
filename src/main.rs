@@ -1,29 +1,23 @@
 #[macro_use]
 extern crate rocket;
 
-use argon2::Argon2;
-use argon2::password_hash::{
-    PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng,
-};
-use rocket::State;
+use argon2::password_hash::PasswordVerifier;
+use argon2::{Argon2, PasswordHash};
+use rocket::fairing::{self, AdHoc};
 use rocket::http::{Cookie, CookieJar, Status};
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use rocket::{Build, Rocket};
+use rocket_db_pools::{Connection, Database, sqlx};
 
-// --- "database" (single account, in memory) ---
+#[derive(Database)]
+#[database("users_db")]
+struct UsersDb(sqlx::SqlitePool);
 
-struct Account {
-    username: String,
-    password_hash: String,
-}
-
-struct AppState {
-    user: Mutex<Option<Account>>,
-}
-
-// --- request/response bodies ---
+#[derive(Database)]
+#[database("app_db")]
+struct AppDb(sqlx::SqlitePool);
 
 #[derive(Deserialize)]
 struct Credentials {
@@ -35,8 +29,6 @@ struct Credentials {
 struct Message {
     message: String,
 }
-
-// --- request guard: protects routes behind a valid session cookie ---
 
 struct AuthenticatedUser {
     username: String,
@@ -56,49 +48,37 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
     }
 }
 
-// --- routes ---
-
 #[get("/health")]
 fn health() -> &'static str {
     "OK"
 }
 
-#[post("/register", data = "<creds>")]
-fn register(creds: Json<Credentials>, state: &State<AppState>) -> Status {
-    let mut user = state.user.lock().unwrap();
-
-    if user.is_some() {
-        // Single-user app: refuse to overwrite an existing account.
-        return Status::Conflict;
-    }
-
-    let salt = SaltString::generate(&mut OsRng);
-    let password_hash = Argon2::default()
-        .hash_password(creds.password.as_bytes(), &salt)
-        .expect("hashing should not fail")
-        .to_string();
-
-    *user = Some(Account {
-        username: creds.username.clone(),
-        password_hash,
-    });
-
-    Status::Created
-}
-
 #[post("/login", data = "<creds>")]
-fn login(creds: Json<Credentials>, state: &State<AppState>, cookies: &CookieJar<'_>) -> Status {
-    let user = state.user.lock().unwrap();
+async fn login(
+    creds: Json<Credentials>,
+    mut db: Connection<UsersDb>,
+    cookies: &CookieJar<'_>,
+) -> Status {
+    let row: Option<(String, String)> =
+        sqlx::query_as("SELECT username, password_hash FROM users WHERE username = ?")
+            .bind(&creds.username)
+            .fetch_optional(&mut **db)
+            .await
+            .unwrap_or(None);
 
-    let account = match &*user {
-        Some(account) if account.username == creds.username => account,
-        _ => return Status::Unauthorized,
+    let (username, password_hash) = match row {
+        Some(row) => row,
+        None => return Status::Unauthorized,
     };
 
-    let parsed_hash = PasswordHash::new(&account.password_hash).expect("stored hash is valid");
+    let parsed_hash = match PasswordHash::new(&password_hash) {
+        Ok(hash) => hash,
+        Err(_) => return Status::InternalServerError,
+    };
+
     match Argon2::default().verify_password(creds.password.as_bytes(), &parsed_hash) {
         Ok(()) => {
-            cookies.add_private(Cookie::new("session", account.username.clone()));
+            cookies.add_private(Cookie::new("session", username));
             Status::Ok
         }
         Err(_) => Status::Unauthorized,
@@ -118,11 +98,61 @@ fn protected(user: AuthenticatedUser) -> Json<Message> {
     })
 }
 
+// app_db owns its own schema; safe to run on every startup.
+async fn init_app_db(rocket: Rocket<Build>) -> fairing::Result {
+    match AppDb::fetch(&rocket) {
+        Some(db) => {
+            let result = sqlx::query(
+                "CREATE TABLE IF NOT EXISTS pi_bot_memory (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    content TEXT NOT NULL
+                )",
+            )
+            .execute(&**db)
+            .await;
+
+            match result {
+                Ok(_) => Ok(rocket),
+                Err(e) => {
+                    error!("Failed to initialize app_db: {}", e);
+                    Err(rocket)
+                }
+            }
+        }
+        None => Err(rocket),
+    }
+}
+
+// Fails fast, before the server binds a port, if users_db hasn't been created yet.
+fn ensure_users_db_exists() {
+    let figment = rocket::Config::figment();
+    let url: String = figment
+        .extract_inner("databases.users_db.url")
+        .expect("set databases.users_db.url in Rocket.toml or ROCKET_DATABASES env var");
+
+    // Strip the sqlite `file:...?mode=ro` wrapper down to a bare path for the existence check.
+    let path = url
+        .trim_start_matches("file:")
+        .split('?')
+        .next()
+        .unwrap_or(&url);
+
+    if !std::path::Path::new(path).exists() {
+        eprintln!(
+            "Users database not found at '{}'.\nRun the create-user tool first to create it.",
+            path
+        );
+        std::process::exit(1);
+    }
+}
+
 #[launch]
 fn rocket() -> _ {
+    ensure_users_db_exists();
+
     rocket::build()
-        .manage(AppState {
-            user: Mutex::new(None),
-        })
-        .mount("/", routes![health, register, login, logout, protected])
+        .attach(UsersDb::init())
+        .attach(AppDb::init())
+        .attach(AdHoc::try_on_ignite("App DB Init", init_app_db))
+        .mount("/", routes![health, login, logout, protected])
 }
