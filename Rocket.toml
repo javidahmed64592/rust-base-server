@@ -2,5 +2,8 @@
 address = "localhost"
 port = 8000
 
-[default.databases.sqlite_db]
+[default.databases.users_db]
+url = "file:db/users.sqlite?mode=ro"
+
+[default.databases.app_db]
 url = "db/app.sqlite"
