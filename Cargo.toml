@@ -14,7 +14,9 @@ license = false
 eula = false
 
 [dependencies]
-rocket = "0.5.1"
+argon2 = "0.5.3"
+rocket = { version = "0.5.1", features = ["json", "secrets"] }
+serde = { version = "1.0.228", features = ["derive"] }
 
 [profile.dist]
 inherits = "release"
