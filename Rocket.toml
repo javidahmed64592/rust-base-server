@@ -1,0 +1,6 @@
+[default]
+address = "localhost"
+port = 8000
+
+[default.databases.sqlite_db]
+url = "db/app.sqlite"
