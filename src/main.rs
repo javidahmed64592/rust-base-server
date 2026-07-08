@@ -5,11 +5,11 @@ use argon2::password_hash::PasswordVerifier;
 use argon2::{Argon2, PasswordHash};
 use rocket::fairing::{self, AdHoc};
 use rocket::http::{Cookie, CookieJar, Status};
-use rocket::request::{FromRequest, Outcome, Request};
+use rocket::serde::Serialize;
 use rocket::serde::json::Json;
-use rocket::serde::{Deserialize, Serialize};
 use rocket::{Build, Rocket};
 use rocket_db_pools::{Connection, Database, sqlx};
+use rust_base_server::{AuthenticatedUser, Credentials};
 
 #[derive(Database)]
 #[database("users_db")]
@@ -19,33 +19,9 @@ struct UsersDb(sqlx::SqlitePool);
 #[database("app_db")]
 struct AppDb(sqlx::SqlitePool);
 
-#[derive(Deserialize)]
-struct Credentials {
-    username: String,
-    password: String,
-}
-
 #[derive(Serialize)]
 struct Message {
     message: String,
-}
-
-struct AuthenticatedUser {
-    username: String,
-}
-
-#[rocket::async_trait]
-impl<'r> FromRequest<'r> for AuthenticatedUser {
-    type Error = ();
-
-    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        match req.cookies().get_private("session") {
-            Some(cookie) => Outcome::Success(AuthenticatedUser {
-                username: cookie.value().to_string(),
-            }),
-            None => Outcome::Error((Status::Unauthorized, ())),
-        }
-    }
 }
 
 #[get("/health")]
