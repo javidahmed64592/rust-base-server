@@ -1,23 +1,17 @@
 #[macro_use]
 extern crate rocket;
 
+mod db;
+
 use argon2::password_hash::PasswordVerifier;
 use argon2::{Argon2, PasswordHash};
-use rocket::fairing::{self, AdHoc};
+use db::{AppDb, UsersDb, ensure_users_db_exists, init_app_db};
+use rocket::fairing::AdHoc;
 use rocket::http::{Cookie, CookieJar, Status};
 use rocket::serde::Serialize;
 use rocket::serde::json::Json;
-use rocket::{Build, Rocket};
 use rocket_db_pools::{Connection, Database, sqlx};
 use rust_base_server::{AuthenticatedUser, Credentials};
-
-#[derive(Database)]
-#[database("users_db")]
-struct UsersDb(sqlx::SqlitePool);
-
-#[derive(Database)]
-#[database("app_db")]
-struct AppDb(sqlx::SqlitePool);
 
 #[derive(Serialize)]
 struct Message {
@@ -72,54 +66,6 @@ fn protected(user: AuthenticatedUser) -> Json<Message> {
     Json(Message {
         message: format!("Hello, {}! This is protected data.", user.username),
     })
-}
-
-// app_db owns its own schema; safe to run on every startup.
-async fn init_app_db(rocket: Rocket<Build>) -> fairing::Result {
-    match AppDb::fetch(&rocket) {
-        Some(db) => {
-            let result = sqlx::query(
-                "CREATE TABLE IF NOT EXISTS pi_bot_memory (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    content TEXT NOT NULL
-                )",
-            )
-            .execute(&**db)
-            .await;
-
-            match result {
-                Ok(_) => Ok(rocket),
-                Err(e) => {
-                    error!("Failed to initialize app_db: {}", e);
-                    Err(rocket)
-                }
-            }
-        }
-        None => Err(rocket),
-    }
-}
-
-// Fails fast, before the server binds a port, if users_db hasn't been created yet.
-fn ensure_users_db_exists() {
-    let figment = rocket::Config::figment();
-    let url: String = figment
-        .extract_inner("databases.users_db.url")
-        .expect("set databases.users_db.url in Rocket.toml or ROCKET_DATABASES env var");
-
-    // Strip the sqlite `file:...?mode=ro` wrapper down to a bare path for the existence check.
-    let path = url
-        .trim_start_matches("file:")
-        .split('?')
-        .next()
-        .unwrap_or(&url);
-
-    if !std::path::Path::new(path).exists() {
-        eprintln!(
-            "Users database not found at '{}'.\nRun the create-user tool first to create it.",
-            path
-        );
-        std::process::exit(1);
-    }
 }
 
 #[launch]
