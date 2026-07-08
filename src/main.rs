@@ -7,6 +7,7 @@ use argon2::password_hash::PasswordVerifier;
 use argon2::{Argon2, PasswordHash};
 use db::{AppDb, UsersDb, ensure_users_db_exists, init_app_db};
 use rocket::fairing::AdHoc;
+use rocket::fs::{FileServer, NamedFile, relative};
 use rocket::http::{Cookie, CookieJar, Status};
 use rocket::serde::Serialize;
 use rocket::serde::json::Json;
@@ -68,6 +69,11 @@ fn protected(user: AuthenticatedUser) -> Json<Message> {
     })
 }
 
+#[get("/<_..>", rank = 20)]
+async fn spa_fallback() -> Option<NamedFile> {
+    NamedFile::open(relative!("static/index.html")).await.ok()
+}
+
 #[launch]
 fn rocket() -> _ {
     ensure_users_db_exists();
@@ -76,5 +82,7 @@ fn rocket() -> _ {
         .attach(UsersDb::init())
         .attach(AppDb::init())
         .attach(AdHoc::try_on_ignite("App DB Init", init_app_db))
-        .mount("/", routes![health, login, logout, protected])
+        .mount("/api", routes![health, login, logout, protected])
+        .mount("/", FileServer::from(relative!("static")).rank(10))
+        .mount("/", routes![spa_fallback])
 }

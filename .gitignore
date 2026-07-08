@@ -26,3 +26,6 @@ target
 
 # SQLite database files
 *.sqlite
+
+# Frontend
+static
