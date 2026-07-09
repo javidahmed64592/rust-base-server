@@ -1,6 +1,19 @@
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use serde::Deserialize;
+use std::path::PathBuf;
+
+pub fn static_dir() -> PathBuf {
+    if cfg!(debug_assertions) {
+        PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/static"))
+    } else {
+        std::env::current_exe()
+            .expect("failed to get current exe path")
+            .parent()
+            .expect("exe has no parent dir")
+            .join("static")
+    }
+}
 
 #[derive(Deserialize)]
 pub struct Credentials {

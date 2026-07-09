@@ -7,12 +7,12 @@ use argon2::password_hash::PasswordVerifier;
 use argon2::{Argon2, PasswordHash};
 use db::{AppDb, UsersDb, ensure_users_db_exists, init_app_db};
 use rocket::fairing::AdHoc;
-use rocket::fs::{FileServer, NamedFile, relative};
+use rocket::fs::{FileServer, NamedFile};
 use rocket::http::{Cookie, CookieJar, Status};
 use rocket::serde::Serialize;
 use rocket::serde::json::Json;
 use rocket_db_pools::{Connection, Database, sqlx};
-use rust_base_server::{AuthenticatedUser, Credentials};
+use rust_base_server::{AuthenticatedUser, Credentials, static_dir};
 
 #[derive(Serialize)]
 struct Message {
@@ -71,7 +71,7 @@ fn protected(user: AuthenticatedUser) -> Json<Message> {
 
 #[get("/<_..>", rank = 20)]
 async fn spa_fallback() -> Option<NamedFile> {
-    NamedFile::open(relative!("static/index.html")).await.ok()
+    NamedFile::open(static_dir().join("index.html")).await.ok()
 }
 
 #[launch]
@@ -83,6 +83,6 @@ fn rocket() -> _ {
         .attach(AppDb::init())
         .attach(AdHoc::try_on_ignite("App DB Init", init_app_db))
         .mount("/api", routes![health, login, logout, protected])
-        .mount("/", FileServer::from(relative!("static")).rank(10))
+        .mount("/", FileServer::from(static_dir()).rank(10))
         .mount("/", routes![spa_fallback])
 }
