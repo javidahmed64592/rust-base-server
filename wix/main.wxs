@@ -123,6 +123,14 @@
                         <Component Id='binary0' Guid='*'>
                             <File
                                 Id='exe0'
+                                Name='create-user.exe'
+                                DiskId='1'
+                                Source='$(var.CargoTargetBinDir)\create-user.exe'
+                                KeyPath='yes'/>
+                        </Component>
+                        <Component Id='binary1' Guid='*'>
+                            <File
+                                Id='exe1'
                                 Name='rust_base_server.exe'
                                 DiskId='1'
                                 Source='$(var.CargoTargetBinDir)\rust_base_server.exe'
@@ -150,6 +158,7 @@
             <!--<ComponentRef Id='License'/>-->
 
             <ComponentRef Id='binary0'/>
+            <ComponentRef Id='binary1'/>
 
             <Feature
                 Id='Environment'

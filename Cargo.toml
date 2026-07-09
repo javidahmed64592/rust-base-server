@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A template for creating Rust applications."
 edition = "2024"
 repository = "https://github.com/javidahmed64592/rust-base-server"
+homepage = "https://github.com/javidahmed64592/rust-base-server"
 license = "MIT"
 authors = ["Javid Ahmed <javidahmed@icloud.com>"]
 
