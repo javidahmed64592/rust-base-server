@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { fetchProtected, logout } from "../api";
 
 export default function Protected() {

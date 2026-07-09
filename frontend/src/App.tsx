@@ -1,7 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import "./App.css";
+
+import { BrowserRouter, Navigate,Route, Routes } from "react-router-dom";
+
 import Login from "./pages/Login";
 import Protected from "./pages/Protected";
-import "./App.css";
 
 export default function App() {
   return (

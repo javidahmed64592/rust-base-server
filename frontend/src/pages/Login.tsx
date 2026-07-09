@@ -1,5 +1,6 @@
-import { useState, type SubmitEvent } from "react";
+import { type SubmitEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { login } from "../api";
 
 export default function Login() {
