@@ -69,7 +69,7 @@
 
         <Package Id='*'
             Keywords='Installer'
-            Description='A template for creating Rust applications.'
+            Description='A Rocket server in Rust.'
             Manufacturer='Javid Ahmed'
             InstallerVersion='450'
             Languages='1033'
