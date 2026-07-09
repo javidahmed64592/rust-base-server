@@ -7,4 +7,11 @@ export default defineConfig({
     outDir: "../static",
     emptyOutDir: true,
   },
+  server: {
+    proxy: {
+      "/login": "http://localhost:8000",
+      "/logout": "http://localhost:8000",
+      "/protected": "http://localhost:8000",
+    },
+  },
 });
