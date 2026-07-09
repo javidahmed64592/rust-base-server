@@ -45,10 +45,16 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd frontend
+          npm install
 
       - name: Run linting
-        run: npm run lint:check
+        run: |
+          cd frontend
+          npm run lint:check
 
       - name: Run formatting
-        run: npm run format:check
+        run: |
+          cd frontend
+          npm run format:check
