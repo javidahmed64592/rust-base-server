@@ -60,7 +60,7 @@
 
     <Product
         Id='*'
-        Name='rust_base_server'
+        Name='rust-base-server'
         UpgradeCode='5C25D2FE-94E1-4BD1-9DD5-4BA37A737700'
         Manufacturer='Javid Ahmed'
         Language='1033'
@@ -83,11 +83,11 @@
             DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.'/>
 
         <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1'/>
-        <Property Id='DiskPrompt' Value='rust_base_server Installation'/>
+        <Property Id='DiskPrompt' Value='rust-base-server Installation'/>
 
         <Directory Id='TARGETDIR' Name='SourceDir'>
             <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-                <Directory Id='APPLICATIONFOLDER' Name='rust_base_server'>
+                <Directory Id='APPLICATIONFOLDER' Name='rust-base-server'>
                     
                     <!--
                       Enabling the license sidecar file in the installer is a four step process:
@@ -131,9 +131,9 @@
                         <Component Id='binary1' Guid='*'>
                             <File
                                 Id='exe1'
-                                Name='rust_base_server.exe'
+                                Name='rust-base-server.exe'
                                 DiskId='1'
-                                Source='$(var.CargoTargetBinDir)\rust_base_server.exe'
+                                Source='$(var.CargoTargetBinDir)\rust-base-server.exe'
                                 KeyPath='yes'/>
                         </Component>
                     </Directory>

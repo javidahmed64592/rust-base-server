@@ -1,5 +1,5 @@
 [package]
-name = "rust_base_server"
+name = "rust-base-server"
 version = "0.1.0"
 description = "A template for creating Rust applications."
 edition = "2024"
