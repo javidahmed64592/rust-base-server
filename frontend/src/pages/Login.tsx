@@ -14,7 +14,7 @@ export default function Login() {
     setError(null);
     const ok = await login(username, password);
     if (ok) {
-      navigate("/protected");
+      navigate("/home");
     } else {
       setError("Invalid username or password");
     }
