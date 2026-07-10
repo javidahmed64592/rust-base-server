@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  validate:
+  validate-backend:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,3 +33,28 @@ jobs:
 
       - name: Build release
         run: cargo build --release
+  validate-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Run linting
+        run: |
+          cd frontend
+          npm run lint:check
+
+      - name: Run formatting
+        run: |
+          cd frontend
+          npm run format:check
