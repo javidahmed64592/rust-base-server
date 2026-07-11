@@ -5,14 +5,23 @@ mod db;
 
 use argon2::password_hash::PasswordVerifier;
 use argon2::{Argon2, PasswordHash};
-use db::{AppDb, UsersDb, ensure_users_db_exists, init_app_db};
-use rocket::fairing::AdHoc;
+use db::{AppDb, UsersDb, create_app_db_table, ensure_users_db_exists};
+use rocket::fairing::{self, AdHoc};
 use rocket::fs::{FileServer, NamedFile};
 use rocket::http::{Cookie, CookieJar, Status};
 use rocket::serde::Serialize;
 use rocket::serde::json::Json;
 use rocket_db_pools::{Connection, Database, sqlx};
 use rust_base_server::{AuthenticatedUser, Credentials, static_dir};
+
+async fn init_app_db(rocket: rocket::Rocket<rocket::Build>) -> fairing::Result {
+    create_app_db_table(
+        rocket,
+        "app_data",
+        "id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL",
+    )
+    .await
+}
 
 #[derive(Serialize)]
 struct Message {
