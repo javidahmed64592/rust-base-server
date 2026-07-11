@@ -9,15 +9,17 @@ pub struct UsersDb(sqlx::SqlitePool);
 #[database("app_db")]
 pub struct AppDb(sqlx::SqlitePool);
 
-pub async fn init_app_db(rocket: Rocket<Build>) -> fairing::Result {
+pub async fn create_app_db_table(
+    rocket: Rocket<Build>,
+    table_name: &str,
+    columns: &str,
+) -> fairing::Result {
     match AppDb::fetch(&rocket) {
         Some(db) => {
-            let result = sqlx::query(
-                "CREATE TABLE IF NOT EXISTS pi_bot_memory (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    content TEXT NOT NULL
-                )",
-            )
+            let result = sqlx::query(&format!(
+                "CREATE TABLE IF NOT EXISTS {} ({})",
+                table_name, columns
+            ))
             .execute(&**db)
             .await;
 
