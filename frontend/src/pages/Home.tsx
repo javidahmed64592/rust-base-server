@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { fetchProtected, logout } from "../api";
+import { fetchProtected, logout } from "@/lib/api";
 
 export default function Home() {
   const [message, setMessage] = useState<string | null>(null);
